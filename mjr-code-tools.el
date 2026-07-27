@@ -19,7 +19,7 @@
 ;; TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ;; Author:      Mitch Richling
-;; Version:     0.3
+;; Version:     0.4
 ;; URL:         https://github.com/richmit/mjr-code-tools
 
 ;; This file is not part of Emacs
@@ -138,7 +138,8 @@
                                             (sh-mode               . "sh")
                                             (slime-repl-mode       . "lisp")
                                             (sql-mode              . "sql"))
-  :type 'boolean
+  "Used to map Emacs major modes to file extensions"
+  :type 'alist
   :group 'mjr-code-tools)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
