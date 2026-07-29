@@ -1,4 +1,4 @@
-;;; mjr-code-tools -*- lexical-binding:t; coding: utf-8; mode:emacs-lisp; fill-column:158 -*-
+;;; mjr-code-tools.el --- source code tools -*- lexical-binding:t; coding: utf-8; mode:emacs-lisp; fill-column:158 -*-
 
 ;; Copyright (c) 2026-2026 Mitch Richling <https://www.mitchr.me>.  All rights reserved.
 ;;
@@ -18,8 +18,8 @@
 ;; SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR
 ;; TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-;; Author:      Mitch Richling
-;; Version:     0.4
+;; Author:      Mitch Richling <https://www.mitchr.me>
+;; Version:     0.10
 ;; URL:         https://github.com/richmit/mjr-code-tools
 
 ;; This file is not part of Emacs
@@ -32,14 +32,14 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
 (defgroup mjr-code-tools nil
-  "mjr-code-tools"
+  "mjr-code-tools."
   :group 'convenience
   :group 'development)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
-(defcustom mjr--github-url-default nil
-  "The URL `mjr--github-url' returns when no github remote is found."
+(defcustom mjr-github-url-default nil
+  "The URL `mjr-github-url' returns when no github remote is found."
   :type '(choice string (const nil))
   :group 'mjr-code-tools)
 
@@ -62,49 +62,49 @@
                                           ("Bug"             . ("BUG WHO <DATE> CONTEXT: "))                  ;; Bug!
                                           ("Review"          . ("REVIEW WHO <TIME> CONTEXT: "))               ;; Code review comment
                                           )
-  "Templates for `mjr-quick-code-comment'"
+  "Templates for `mjr-quick-code-comment'."
   :type 'list
   :group 'mjr-code-tools)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
 (defcustom mjr-quick-code-comment-who nil
-  "The value for the WHO macro expanded by `mjr-quick-code-comment'.  If NIL, then the `user-real-login-name' will be used"
+  "The value for the WHO macro expanded by `mjr-quick-code-comment'.  If NIL, then the function `user-real-login-name' will be used."
   :type '(choice string (const nil))
   :group 'mjr-code-tools)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
 (defcustom mjr-fix-c-includes-der-db nil
-  "File containing the header DB used by `mjr-fix-c-includes-der'"
+  "File containing the header DB used by `mjr-fix-c-includes-der'."
   :type '(choice file (const nil))
   :group 'mjr-code-tools)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
 (defcustom mjr-add-header-der-templates nil
-  "Directory holding template files for `mjr-add-header-der'"
+  "Directory holding template files for `mjr-add-header-der'."
   :type 'string
   :group 'mjr-code-tools)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
 (defcustom mjr-add-header-der-licenses nil
-  "Directory holding licence files for `mjr-add-header-der'"
+  "Directory holding licence files for `mjr-add-header-der'."
   :type 'string
   :group 'mjr-code-tools)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
 (defcustom mjr-add-header-der-login-name nil
-  "The value for the LOGIN-NAME macro expanded by `mjr-add-header-der'.  If NIL, then the `user-real-login-name' will be used"
+  "The value for the LOGIN-NAME macro expanded by `mjr-add-header-der'.  If NIL, then the function `user-real-login-name' will be used."
   :type '(choice string (const nil))
   :group 'mjr-code-tools)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
 (defcustom mjr-add-header-der-legal-name nil
-  "The value for the LEGAL-NAME macro expanded by `mjr-add-header-der'"
+  "The value for the LEGAL-NAME macro expanded by `mjr-add-header-der'."
   :type '(choice string (const nil))
   :group 'mjr-code-tools)
 
@@ -138,7 +138,7 @@
                                             (sh-mode               . "sh")
                                             (slime-repl-mode       . "lisp")
                                             (sql-mode              . "sql"))
-  "Used to map Emacs major modes to file extensions"
+  "Used to map Emacs major modes to file extensions."
   :type 'alist
   :group 'mjr-code-tools)
 
@@ -167,13 +167,15 @@
   "Find & evaluate a /one liner/ construct at the point or in the active region, and place the results on the kill ring.
 One liner constructs:
   - SHELLO ... `shell-command-to-string' is used to evaluate the code and the resulting STDOUT is placed on the kill ring.
-  - LISPO .... Code is parsed via `read-from-string' & evaluated. The value is serialized and placed on the kill ring.  Serialization via `format' with %s.
+  - LISPO .... Code is parsed via `read-from-string' & evaluated.  The value is serialized and placed on the kill ring.  Serialization via `format' with %s.
 
 Typical one line constructs have the form:
 
      ... LANGUAGE_TOKEN: commands/forms to evaluated
 
-The LANGUAGE_TOKEN is one of SHELLO or LISP.  Any preceding text on the line is ignored. The construct continues to the end of the line.
+The LANGUAGE_TOKEN is one of SHELLO or LISP.  Any preceding text on the line is ignored.  The construct continues to the end of the line.  If the buffer's
+current mode indicates an `comment-end' token, then that token will be removed from the end of the construct.
+
 
 In spite the name of this function, multi-line code blocks are supported.  To use them at least one character of the construct's first & last lines must be
 contained in the active region.  This region is expanded to the start of the first line and the end of the last line.  Blank lines are removed, the remaining
@@ -186,13 +188,18 @@ My primary use case is to embedded these structures into programming language co
          (eor     (if reg-act (region-end)       (point)))                                                         ;; End of region or point
          (bor-bol (progn (goto-char bor) (line-beginning-position)))                                               ;; Start of the first line of region or line with point
          (eor-eol (progn (goto-char eor) (line-end-position)))                                                     ;; End of the last line of region or line with point
-         (reg-lin (string-split (buffer-substring-no-properties bor-bol eor-eol) "[\n\r]+" t))                     ;; List of non-blank lines
+         (com-end (if (boundp 'comment-end) comment-end))                                                          ;; Comment end string
+         (reg-raw (buffer-substring-no-properties bor-bol eor-eol))                                                ;; String with lines containing code
+         (reg-str (if com-end
+                      (string-remove-suffix com-end (string-trim-right reg-raw))
+                      reg-raw))
+         (reg-lin (string-split reg-str "[\n\r]+" t))                                                              ;; List of non-blank lines
          (lin-one (car reg-lin)))                                                                                  ;; First line (string)
     (when (null lin-one)
       (error "mjr-one-liner: Could not extract region"))
     (let ((tok-loc (string-match "\\(SHELL\\|LISP\\)O:" lin-one)))                                                 ;; Location of shello token
       (unless tok-loc
-        (error "mjr-one-liner: Could not find one-liner start token."))
+        (error "mjr-one-liner: Could not find one-liner start token"))
       (let* ((lan-tok (if (char-equal ?S (aref lin-one tok-loc)) "SHELL" "LISP"))                                  ;; language token
              (cod-str (substring (mapconcat (lambda (s) (substring s tok-loc)) reg-lin "\n")                       ;; Code string
                                  (if (string-equal lan-tok "SHELL") 7 6)))
@@ -213,16 +220,16 @@ The MJR comments come in one of two forms (depending of if a region is selected 
   * Line: A formatted comment line is added after the current line (cursor placed ready for content)
 
 The comments themselves are templates stored in `mjr-quick-code-comment'.  These templates can inquiarperate several macros that are are expanded: WHO, DATE,
-TIME, TAG, & CONTEXT.  With a prefix argument, TIME and DATE are queried from the user.  Otherwise the sytem time/date in ISO 8601 format are used. CONTEXT is
-guessed from the source code (name of function or buffer).  The value of WHO is `mjr-quick-code-comment-who' if it is non-NIL and the user login name
-otherwise. If any any macro value is missing or an empty string, then it (and the space immediately proceeding it) are removed from the comment.
+TIME, TAG, & CONTEXT.  With a prefix argument, TIME and DATE are queried from the user.  Otherwise the sytem time/date in ISO 8601 format are used.  CONTEXT
+is guessed from the source code (name of function or buffer).  The value of WHO is `mjr-quick-code-comment-who' if it is non-NIL and the user login name
+otherwise.  If any any macro value is missing or an empty string, then it (and the space immediately proceeding it) are removed from the comment.
 
 For interactive use:
   - The comment type is queried from the user
   - The date will be
     - Negative prefix argument: the empty string
     - Non-negative prefix argument: queried from the user
-    - No prefix argument: current time in ISO 8601 format. "
+    - No prefix argument: current time in ISO 8601 format."
   (interactive)
   (let* ((line-mode     (not (region-active-p)))
          (region-start  (if line-mode (point) (region-beginning)))
@@ -297,8 +304,8 @@ For interactive use:
 (defun mjr-fix-c-includes-der ()
   "Fixes C/C++ #include lines to match my standard header format.
 
-In dired-mode operate on marked (or current) file(s); otherwise operate on current buffer.  If any of 
-the marked files are already loaded in a buffer it is best to save them first -- so you can do an 
+In `dired-mode' operate on marked (or current) file(s); otherwise operate on current buffer.  If any of
+the marked files are already loaded in a buffer it is best to save them first -- so you can do an
 `ediff-current-file' to see what changed.
 
 The standard header format is defined by a header DB stored `mjr-fix-c-includes-der-db'.
@@ -341,17 +348,17 @@ An example of such a file: https://github.com/richmit/codeBits/blob/main/cheader
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
-(defun mjr--github-url ()
+(defun mjr-github-url ()
   "Return github URL.
 If the CWD is part of a github repo with a remote origin, then the repo URL is returned.  Otherwise return URL to my github my profile page."
   (if-let* ((git-cfg (shell-command-to-string "git config --get remote.origin.url"))
             (        (string-match "github.com" git-cfg)))
       (string-remove-suffix ".git" (replace-regexp-in-string "^git@github.com:" "https://github.com/" (string-trim git-cfg)))
-    mjr--github-url-default))
+    mjr-github-url-default))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
-(defun mjr-add-header-der (&optional file-type lic-file)
+(defun mjr-add-header-der (&optional file-type license-file)
   "Prepend the buffer with an appropriate header (including a copyright/license) and, if the buffer is empty, a template.
 
 Some text in the templates gets expanded:
@@ -369,19 +376,19 @@ Some text in the templates gets expanded:
 
 If run in dired-mode, then marked files will be loaded and operated on.
 
-If run with a prefix argument, then file type and license file to use are queried from the user.  Otherwise the file type is automatically guessed,
-and the license is default.  The file type guess is based on the full filename, the file extension, and the buffer mode -- in that order.  If the
-file type can't be determined, then an error is produced.  If the license file is non-existent, then the LICENSE will be left unexpanded in the
-template.  Note LICENSE files are wrapped to the fill-column set in the Emacs local variables section of the template header!
+If run with a prefix argument, then FILE-TYPE and LICENSE-FILE are queried from the user.  Otherwise FILE-TYPE is automatically guessed, and the license is
+default.txt.  The FILE-TYPE guess is based on the full filename, the file extension, and the buffer mode -- in that order.  If the FILE-TYPE can't be
+determined, then an error is produced.  If the LICENSE-FILE is non-existent, then the LICENSE will be left unexpanded in the template.  Note the content of
+the license file is wrapped to the fill-column set in the Emacs local variables section of the template header!
 
 Template & License Files:
- - Header templates are in mjr-dir-core/codeBits/templates/top.*
- - Full file templates are  in mjr-dir-core/codeBits/templates/template.*
- - License files are in mjr-dir-core/codeBits/licenseFiles/*.txt"
+ - Header templates are in `mjr-add-header-der-templates' and named top.*
+ - Full file templates are in `mjr-add-header-der-templates' and named template.*
+ - License files are in in `mjr-add-header-der-licenses'"
   (interactive
    (if current-prefix-arg
        (let* ((file-type-v (append '("AUTO")
-                                   (mapcar #'file-name-extension (file-expand-wildcards (file-name-concat mjr-dir-core "codeBits/templates/top.*")))))
+                                   (mapcar #'file-name-extension (file-expand-wildcards (file-name-concat mjr-add-header-der-templates "top.*")))))
               (da-type     (if (and (boundp 'ido-everywhere) ido-everywhere)
                                (ido-completing-read "Type: " file-type-v nil 't nil nil "AUTO")
                                (completing-read     "Type: " file-type-v nil 't nil nil "AUTO")))
@@ -401,7 +408,7 @@ Template & License Files:
                                                                            (file-expand-wildcards (file-name-concat mjr-dir-core
                                                                                                                     "codeBits/templates/top.*")))
                                                                    :test #'string-equal))
-                                          (cdr (assoc major-mode mjr-add-header-der-mode-to-ext)))                          ;; major-mode                                                        
+                                          (cdr (assoc major-mode mjr-add-header-der-mode-to-ext)))                          ;; major-mode
                                       file-type))                                                                           ;; the value of file-type
                    (top-file-name (concat (file-name-concat mjr-add-header-der-templates "top.")      file-type))
                    (tpl-file-name (concat (file-name-concat mjr-add-header-der-templates "template.") file-type))
@@ -419,7 +426,7 @@ Template & License Files:
                                                 (buffer-string))
                                               "")))
                    (              (not (string-empty-p all-string))))
-         (when (file-exists-p lic-file)                                                                ;; Fill in copyright block
+         (when (file-exists-p license-file)                                                                ;; Fill in copyright block
            (let ((case-fold-search nil)
                  (lic-re           "\\(^.*\\)LICENSE[\n\r]+"))
              (when (string-match lic-re all-string)
@@ -428,7 +435,7 @@ Template & License Files:
                                    (- (string-to-number (match-string 1 all-string)) (length cw-prefix) 2)
                                    65))
                       (lic-dat (with-temp-buffer
-                                 (insert-file-contents lic-file)
+                                 (insert-file-contents license-file)
                                  (goto-char (point-min))
                                  (set-mark (point-max))
                                  (set-fill-column fil-wid)
@@ -453,7 +460,7 @@ Template & License Files:
                                                                        (let ((git-ret (sqz-ws (nix-hws (shell-command-to-string "git config --get user.email")))))
                                                                          (and (stringp git-ret) (not (string-equal "" git-ret)) git-ret)))))
                                 (cons "GIT-REMOTE"      (lambda () (string-trim (shell-command-to-string "git config --get remote.origin.url"))))
-                                (cons "GITHUBURL"       (lambda () (mjr--github-url)))
+                                (cons "GITHUBURL"       (lambda () (mjr-github-url)))
                                 (cons "LOGIN-NAME"      (lambda () (or mjr-add-header-der-login-name
                                                                        (user-real-login-name))))
                                 (cons "LEGAL-NAME"      (lambda () mjr-add-header-der-legal-name))
@@ -467,4 +474,4 @@ Template & License Files:
 
 (provide 'mjr-code-tools)
 
-;;; filename ends here
+;;; mjr-code-tools.el ends here
