@@ -329,7 +329,7 @@ An example of such a file: https://github.com/richmit/codeBits/blob/main/cheader
                               (golden-include-name (match-string 2)))
                           (push (cons golden-include-name golden-include-line) golden-includes))))
     ;; Process buffer(s)
-    (mjr-apply-with-dired-magic (lambda ()
+    (mjr-apply-dired-magic (lambda ()
                                   (save-excursion
                                     (message "mjr-fix-c-includes-der: Processing buffer: %s" (buffer-name))
                                     (goto-char (point-min))
@@ -397,7 +397,7 @@ Template & License Files:
        (list "AUTO" (file-name-concat mjr-add-header-der-licenses "default.txt"))))
   (cl-flet ((nix-hws (str) (replace-regexp-in-string "[\n\r]+"                ""  str))                               ;; Delete horizontal whitespace
             (sqz-ws  (str) (replace-regexp-in-string "[[[:space:]\n\r]\n\r]+" " " str)))                              ;; Squeeze all whitespace
-    (mjr-apply-with-dired-magic
+    (mjr-apply-dired-magic
      (lambda ()
        (when-let* ((da-filename   (buffer-file-name))
                    (file-type     (if (or (not (stringp file-type)) (string= file-type "AUTO")  (string= file-type ""))
