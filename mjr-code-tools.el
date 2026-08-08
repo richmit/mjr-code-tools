@@ -19,7 +19,7 @@
 ;; TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ;; Author:      Mitch Richling <https://www.mitchr.me>
-;; Version:     0.10
+;; Version:     0.11
 ;; URL:         https://github.com/richmit/mjr-code-tools
 
 ;; This file is not part of Emacs
@@ -45,8 +45,7 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
-(defcustom mjr-quick-code-comment-types '(
-                                          ("ToDo"            . ("TODO WHO <DATE> CONTEXT: "))                 ;; TODO Marker
+(defcustom mjr-quick-code-comment-types '(("ToDo"            . ("TODO WHO <DATE> CONTEXT: "))                 ;; TODO Marker
                                           ("Modification"    . ("MOD WHO <TIME> CONTEXT: "))                  ;; Modification
                                           ("Modification"    . ("MOD WHO BEGIN ----------------------- TIME"
                                                                 "MOD WHO END ------------------------- TIME"))
@@ -63,7 +62,7 @@
                                           ("Review"          . ("REVIEW WHO <TIME> CONTEXT: "))               ;; Code review comment
                                           )
   "Templates for `mjr-quick-code-comment'."
-  :type 'list
+  :type '(alist :key-type string :value-type (choice (list string) (list string string)))
   :group 'mjr-code-tools)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
