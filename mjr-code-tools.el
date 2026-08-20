@@ -56,8 +56,8 @@
                                                                 "SS-END:TAG:"))
                                           ("Coverage"        . ("COVERAGE WHO <DATE> CONTEXT: "))             ;; Test coverage
                                           ("SCM"             . ("SCM WHO <TIME> CONTEXT: "))                  ;; Transient comment. Pasted into SCM logs and removed before check-in.
-                                          ("SHELLO"          . ("SHELLO: "))                                  ;; SHELLO comments for use with mjr-one-liner
-                                          ("LISPOO"          . ("LISPOO: "))                                  ;; LISPOO comments for use with mjr-one-liner
+                                          ("SHELLO"          . (":shell>>> "))                                ;; SHELLO comments for use with mjr-eval-meta
+                                          ("LISPO"           . (":elisp>>> "))                                ;; LISPOO comments for use with mjr-eval-meta
                                           ("Bug"             . ("BUG WHO <DATE> CONTEXT: "))                  ;; Bug!
                                           ("Review"          . ("REVIEW WHO <TIME> CONTEXT: "))               ;; Code review comment
                                           )
@@ -159,55 +159,6 @@
     (delete-file fileA)
     (delete-file fileB)
     (delete-file fileM)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;;;###autoload
-(defun mjr-one-liner ()
-  "Find & evaluate a /one liner/ construct at the point or in the active region, and place the results on the kill ring.
-One liner constructs:
-  - SHELLO ... `shell-command-to-string' is used to evaluate the code and the resulting STDOUT is placed on the kill ring.
-  - LISPO .... Code is parsed via `read-from-string' & evaluated.  The value is serialized and placed on the kill ring.  Serialization via `format' with %s.
-
-Typical one line constructs have the form:
-
-     ... LANGUAGE_TOKEN: commands/forms to evaluated
-
-The LANGUAGE_TOKEN is one of SHELLO or LISP.  Any preceding text on the line is ignored.  The construct continues to the end of the line.  If the buffer's
-current mode indicates an `comment-end' token, then that token will be removed from the end of the construct.
-
-
-In spite the name of this function, multi-line code blocks are supported.  To use them at least one character of the construct's first & last lines must be
-contained in the active region.  This region is expanded to the start of the first line and the end of the last line.  Blank lines are removed, the remaining
-lines are stripped of any common prefix string, the LANGUAGE_TOKEN structure on the first line is removed, and the resulting code is evaluated.
-
-My primary use case is to embedded these structures into programming language comments where the one liner is used to generate code."
-  (interactive)
-  (let* ((reg-act (region-active-p))                                                                               ;; Is region active
-         (bor     (if reg-act (region-beginning) (point)))                                                         ;; Start of region or point
-         (eor     (if reg-act (region-end)       (point)))                                                         ;; End of region or point
-         (bor-bol (progn (goto-char bor) (line-beginning-position)))                                               ;; Start of the first line of region or line with point
-         (eor-eol (progn (goto-char eor) (line-end-position)))                                                     ;; End of the last line of region or line with point
-         (com-end (if (boundp 'comment-end) comment-end))                                                          ;; Comment end string
-         (reg-raw (buffer-substring-no-properties bor-bol eor-eol))                                                ;; String with lines containing code
-         (reg-str (if com-end
-                      (string-remove-suffix com-end (string-trim-right reg-raw))
-                      reg-raw))
-         (reg-lin (string-split reg-str "[\n\r]+" t))                                                              ;; List of non-blank lines
-         (lin-one (car reg-lin)))                                                                                  ;; First line (string)
-    (when (null lin-one)
-      (error "mjr-one-liner: Could not extract region"))
-    (let ((tok-loc (string-match "\\(SHELL\\|LISP\\)O:" lin-one)))                                                 ;; Location of shello token
-      (unless tok-loc
-        (error "mjr-one-liner: Could not find one-liner start token"))
-      (let* ((lan-tok (if (char-equal ?S (aref lin-one tok-loc)) "SHELL" "LISP"))                                  ;; language token
-             (cod-str (substring (mapconcat (lambda (s) (substring s tok-loc)) reg-lin "\n")                       ;; Code string
-                                 (if (string-equal lan-tok "SHELL") 7 6)))
-             (cod-res (cond ((string-equal lan-tok "LISP")  (format "%s" (eval (car (read-from-string cod-str))))) ;; code result
-                            ((string-equal lan-tok "SHELL") (shell-command-to-string cod-str)))))
-        (unless (stringp cod-res)
-          (error "mjr-one-liner: Something went horribly wrong during evaluation!"))
-        (message "Code evaluation resulted in %d characters of output placed on the kill ring." (length cod-res))
-        (kill-new cod-res)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
