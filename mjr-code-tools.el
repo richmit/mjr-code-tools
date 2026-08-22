@@ -19,13 +19,40 @@
 ;; TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ;; Author:      Mitch Richling <https://www.mitchr.me>
-;; Version:     0.13
+;; Version:     1.0
 ;; URL:         https://github.com/richmit/mjr-code-tools
 
 ;; This file is not part of Emacs
 
 ;;; Commentary:
-;; See the README: https://github.com/richmit/mjr-code-tools/
+;;
+;; * Simple Emacs Tools For Software Development
+;;
+;; Official Repository: https://github.com/richmit/mjr-code-tools
+;;
+;; ** Introduction
+;;
+;; This package has some tools focused on editing and maintaining source code.  
+;;
+;;  - `mjr-quick-code-comment'   Add preformatted comments from templates 
+;;  - `mjr-emerge-git-conflict'  Merge git conflicts
+;;  - `mjr-fix-c-includes-der'   Reformat include lines in C/C++ to be pretty
+;;  - `mjr-github-url'           Return the GitHub URL for the current repo
+;;  - `mjr-add-header-der'       Add a header at the top of source files
+;;
+;; WARNING: Some of the functionality is dependent upon my development process -- for example the file layout I use for projects.
+;;
+;; WARNING: Some of this code is usless without support files: https://github.com/richmit/codeBits
+;;
+;; ** Installing
+;;
+;; The easiest way to install `mjr-code-tools' is to pull it directly from github:
+;;
+;;      (package-vc-install (list 'mjr-code-tools
+;;                           :url "https://github.com/richmit/mjr-code-tools"
+;;                           :rev 'newest))
+;;
+;; You can also just download the primary Lisp file, load it into a buffer, and then run 'M-x package-install-from-buffer'.
 
 ;;; Code:
 
@@ -137,7 +164,7 @@
                                             (sh-mode               . "sh")
                                             (slime-repl-mode       . "lisp")
                                             (sql-mode              . "sql"))
-  "Used to map Emacs major modes to file extensions."
+  "Used by `mjr-add-header-der' to map Emacs major modes to file extensions."
   :type 'alist
   :group 'mjr-code-tools)
 
@@ -163,23 +190,21 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;;;###autoload
 (defun mjr-quick-code-comment ()
-  "Add MJR comment at point/around region.
+  "Add specialized comment at point/around region.
 
-The MJR comments come in one of two forms (depending of if a region is selected when the function is executed):
-  * Region: Two formatted comment lines are added on the line before and line after the current region.
-  * Line: A formatted comment line is added after the current line (cursor placed ready for content)
+Comments come in one of two forms (depending of if a region is active when the function is executed):
+  * Region .. Two formatted comment lines are added: One on the line before and one line after the current region.
+              Cursor placed on on first character of line after first comment line.
+  * Line .... A single formatted comment line is added after the current line.
+              Cursor placed at the end of the comment
 
-The comments themselves are templates stored in `mjr-quick-code-comment'.  These templates can inquiarperate several macros that are are expanded: WHO, DATE,
-TIME, TAG, & CONTEXT.  With a prefix argument, TIME and DATE are queried from the user.  Otherwise the sytem time/date in ISO 8601 format are used.  CONTEXT
-is guessed from the source code (name of function or buffer).  The value of WHO is `mjr-quick-code-comment-who' if it is non-NIL and the user login name
-otherwise.  If any any macro value is missing or an empty string, then it (and the space immediately proceeding it) are removed from the comment.
-
-For interactive use:
-  - The comment type is queried from the user
-  - The date will be
-    - Negative prefix argument: the empty string
-    - Non-negative prefix argument: queried from the user
-    - No prefix argument: current time in ISO 8601 format."
+The comments themselves are templates stored in `mjr-quick-code-comment'.  These templates can incorporate several macros that are are expanded: 
+  * WHO ...... Value of `mjr-quick-code-comment-who' or return from `user-real-login-name'
+  * DATE ..... YYYY-MM-DD (May be edited with prefix argument)
+  * TIME ..... ISO 8601 time stamp (May be edited with prefix argument)
+  * TAG ...... Queried from user
+  * CONTEXT .. Guessed from the source code (name of function or buffer).  
+If any any macro value is missing or an empty string, then it (and the space immediately proceeding it) are removed from the comment."
   (interactive)
   (let* ((line-mode     (not (region-active-p)))
          (region-start  (if line-mode (point) (region-beginning)))
@@ -196,28 +221,28 @@ For interactive use:
          (com-start     (if (boundp 'comment-start) (symbol-value 'comment-start) ""))
          (com-end       (if (boundp 'comment-end)   (symbol-value 'comment-end)   ""))
          (report-time   (current-time))
-         (macro-gets    '(("TIME"    . (lambda () (if current-prefix-arg
-                                                      (read-string "Time String: " (format-time-string "%FT%T%z" report-time))
-                                                      (format-time-string "%FT%T%z" report-time))))
-                          ("DATE"    . (lambda () (if current-prefix-arg
-                                                      (read-string "Date String: " (format-time-string "%F" report-time))
-                                                      (format-time-string "%F" report-time))))
-                          ("WHO"     . (lambda () (or mjr-quick-code-comment-who
-                                                      (user-real-login-name))))
-                          ("TAG"     . (lambda () (cl-loop for tmp = (read-string "Tag String (non-empty & alphanumeric): ")
-                                                           finally (return tmp)
-                                                           until (string-match-p "^[A-Za-z0-9_-]+$" tmp))))
-                          ("CONTEXT" . (lambda () (or (cl-case major-mode
-                                                        (org-mode (condition-case nil
-                                                                      (nth 4 (org-heading-components))
-                                                                    (error nil)))
-                                                        (otherwise (let ((tmp (add-log-current-defun)))
-                                                                     (when (cl-notany (lambda (x) (string-equal tmp x))
-                                                                                      '("BOOST_AUTO_TEST_CASE" "TEST")) ;; List of bad defuns
-                                                                       tmp))))
-                                                      (when (buffer-file-name)
-                                                        (file-name-nondirectory (buffer-file-name)))
-                                                      (buffer-name))))))
+         (macro-gets    (list (cons "TIME"    (lambda () (if current-prefix-arg
+                                                             (read-string "Time String: " (format-time-string "%FT%T%z" report-time))
+                                                             (format-time-string "%FT%T%z" report-time))))
+                              (cons "DATE"    (lambda () (if current-prefix-arg
+                                                             (read-string "Date String: " (format-time-string "%F" report-time))
+                                                             (format-time-string "%F" report-time))))
+                              (cons "WHO"     (lambda () (or mjr-quick-code-comment-who
+                                                             (user-real-login-name))))
+                              (cons "TAG"      (lambda () (cl-loop for tmp = (read-string "Tag String (non-empty & alphanumeric): ")
+                                                                   finally (return tmp)
+                                                                   until (string-match-p "^[A-Za-z0-9_-]+$" tmp))))
+                              (cons "CONTEXT" (lambda () (or (cl-case major-mode
+                                                               (org-mode (condition-case nil
+                                                                             (nth 4 (org-heading-components))
+                                                                           (error nil)))
+                                                               (otherwise (let ((tmp (add-log-current-defun)))
+                                                                            (when (cl-notany (lambda (x) (string-equal tmp x))
+                                                                                             '("BOOST_AUTO_TEST_CASE" "TEST")) ;; List of bad defuns
+                                                                              tmp))))
+                                                             (when (buffer-file-name)
+                                                               (file-name-nondirectory (buffer-file-name)))
+                                                             (buffer-name))))))
          (macro-vals   (mapcar (lambda (mg) (let ((mt (car mg))
                                                   (mc (cdr mg)))
                                               (cons mt (or (when (string-match-p mt macro-comb)
@@ -254,11 +279,10 @@ For interactive use:
 (defun mjr-fix-c-includes-der ()
   "Fixes C/C++ #include lines to match my standard header format.
 
-In `dired-mode' operate on marked (or current) file(s); otherwise operate on current buffer.  If any of
-the marked files are already loaded in a buffer it is best to save them first -- so you can do an
-`ediff-current-file' to see what changed.
+In `dired-mode' operate on marked (or current) file(s); otherwise operate on current buffer.  If any of the marked files are already loaded in a buffer it is
+best to save them first -- so you can do an `ediff-current-file' to see what changed.
 
-The standard header format is defined by a header DB stored `mjr-fix-c-includes-der-db'.
+The standard header format is defined by a header DB stored `mjr-fix-c-includes-der-db'.  
 An example of such a file: https://github.com/richmit/codeBits/blob/main/cheaderSTD.txt"
   (interactive)
   ;; Validate mjr-fix-c-includes-der-db
@@ -333,8 +357,11 @@ the license file is wrapped to the fill-column set in the Emacs local variables 
 
 Template & License Files:
  - Header templates are in `mjr-add-header-der-templates' and named top.*
+   Examples: https://github.com/richmit/codeBits/tree/main/templates
  - Full file templates are in `mjr-add-header-der-templates' and named template.*
- - License files are in in `mjr-add-header-der-licenses'"
+   Examples: https://github.com/richmit/codeBits/tree/main/templates
+ - License files are in in `mjr-add-header-der-licenses'
+   Examples https://github.com/richmit/codeBits/tree/main/licenseFiles"
   (interactive
    (if current-prefix-arg
        (let* ((file-type-v (append '("AUTO")
