@@ -19,7 +19,7 @@
 ;; TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ;; Author:      Mitch Richling <https://www.mitchr.me>
-;; Version:     1.1
+;; Version:     1.2
 ;; URL:         https://github.com/richmit/mjr-code-tools
 
 ;; This file is not part of Emacs
@@ -83,15 +83,21 @@
                                           ("Debug"           . ("DEBUG WHO BEGIN --------------------- TIME"
                                                                 "DEBUG WHO END ----------------------- TIME"))
                                           ("Source Snippet"  . ("SS-BEGIN:TAG:"                               ;; Source Snippet Delimiters.
-                                                                "SS-END:TAG:"))
-                                          ("Coverage"        . ("COVERAGE WHO <DATE> CONTEXT: "))             ;; Test coverage
+                                                                "SS-END:TAG:"))                       
+                                          ("Coverage"        . ("COVERAGE WHO <DATE> CONTEXT: "))             ;; Test coverage. See: 
                                           ("SCM"             . ("SCM WHO <TIME> CONTEXT: "))                  ;; Transient comment. Pasted into SCM logs and removed before check-in.
                                           ("SHELLO"          . (":shell>>> "))                                ;; SHELLO comments for use with mjr-eval-meta
                                           ("LISPO"           . (":elisp>>> "))                                ;; LISPOO comments for use with mjr-eval-meta
                                           ("Bug"             . ("BUG WHO <DATE> CONTEXT: "))                  ;; Bug!
                                           ("Review"          . ("REVIEW WHO <TIME> CONTEXT: "))               ;; Code review comment
                                           )
-  "Templates for `mjr-quick-code-comment'."
+  "Templates for `mjr-quick-code-comment'.
+For information on external tooling related to some of the out of the box comment types:
+  - All one line comments .. https://github.com/richmit/codeBits/blob/main/bin/findOneLineComments.sh
+  - Coverage ............... https://github.com/richmit/codeBits/blob/main/bin/findFilesWithCoverageComments.sh
+  - Source Snippet ......... https://github.com/richmit/codeBits/blob/main/bin/getSnip.sh
+  - SHELLO ................. https://github.com/richmit/mjr-eval
+  - LISPO .................. https://github.com/richmit/mjr-eval"
   :type '(alist :key-type string :value-type (choice (list string) (list string string)))
   :group 'mjr-code-tools)
 
